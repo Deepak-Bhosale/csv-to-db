@@ -1,19 +1,21 @@
-import dotenv from 'dotenv';
 import express from 'express';
+import fileUpload from 'express-fileupload';
 import connectDB from './config/db.js';
-import uploadRoutes from './routes/uploadRoutes.js';
+import csvRoutes from './routes/csvRoutes.js';
+import dotenv from 'dotenv';
 
 dotenv.config();
-
-const app = express();
-const PORT = process.env.PORT || 3000;
-
 connectDB();
 
-app.use(express.json());
+const app = express();
+const port = process.env.PORT || 3000;
 
-app.use('/api', uploadRoutes);
+// Middleware for handling file uploads
+app.use(fileUpload());
 
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+// Load CSV routes
+app.use('/api/csv', csvRoutes);
+
+app.listen(port, () => {
+  console.log(`Server running on port ${port}`);
 });

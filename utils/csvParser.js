@@ -1,44 +1,27 @@
-import fs from 'fs';
-import readline from 'readline';
+export const parseCSV = (csvData) => {
+  const lines = csvData.split('\n');
+  const headers = lines[0].split(',').map((h) => h.trim());
+  const records = [];
 
-export const parseCSV = async (filePath) => {
-  const stream = fs.createReadStream(filePath);
-  const rl = readline.createInterface({ input: stream });
+  for (let i = 1; i < lines.length; i++) {
+    const record = {};
+    const values = lines[i].split(',').map((v) => v.trim());
 
-  const headers = [];
-  const data = [];
+    headers.forEach((header, index) => {
+      const keys = header.split('.');
+      let current = record;
 
-  for await (const line of rl) {
-    const values = line.split(',');
-
-    if (headers.length === 0) {
-      headers.push(...values);
-    } else {
-      const record = {};
-      const additionalInfo = {};
-      const address = {};
-
-      headers.forEach((header, index) => {
-        const value = values[index];
-
-        if (header.startsWith('name.')) {
-          record.name = record.name || {};
-          record.name[header.split('.')[1]] = value;
-        } else if (header.startsWith('address.')) {
-          address[header.split('.')[1]] = value;
+      keys.forEach((key, idx) => {
+        if (idx === keys.length - 1) {
+          current[key] = values[index];
         } else {
-          additionalInfo[header] = value;
+          current[key] = current[key] || {};
+          current = current[key];
         }
       });
+    });
 
-      record.name = `${record.name.firstName} ${record.name.lastName}`;
-      record.age = parseInt(additionalInfo.age);
-      record.address = address;
-      record.additional_info = additionalInfo;
-
-      data.push(record);
-    }
+    records.push(record);
   }
-
-  return data;
+  return records;
 };
